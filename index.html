@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💕 True Love</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0d0221 0%, #3d0030 20%, #7a1048 45%, #be3462 70%, #e8698a 100%);
+      font-family: 'Noto Sans Georgian', sans-serif;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* ─── Fixed canvas layers ─── */
+    #layer-stars,
+    #layer-hearts,
+    #layer-confetti {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    #layer-stars   { z-index: 0; }
+    #layer-hearts  { z-index: 1; }
+    #layer-confetti{ z-index: 999; }
+
+    /* ─── Stars ─── */
+    .star {
+      position: absolute;
+      color: rgba(255, 220, 240, 0.7);
+      animation: twinkle var(--dur, 3s) var(--delay, 0s) ease-in-out infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.15; transform: scale(0.6); }
+      50%       { opacity: 1;    transform: scale(1.4); }
+    }
+
+    /* ─── Floating hearts ─── */
+    .fheart {
+      position: absolute;
+      bottom: -60px;
+      opacity: 0;
+      animation: riseHeart var(--dur, 9s) var(--delay, 0s) ease-in infinite;
+    }
+    @keyframes riseHeart {
+      0%   { bottom: -60px; opacity: 0;   transform: translateX(0) scale(0.5) rotate(0deg); }
+      12%  { opacity: 0.8; }
+      88%  { opacity: 0.3; }
+      100% { bottom: 110vh; opacity: 0; transform: translateX(var(--drift)) scale(1.3) rotate(var(--rot)); }
+    }
+
+    /* ─── Screens ─── */
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(22px, 4vh, 42px);
+      z-index: 10;
+      padding: 24px 20px;
+      transition: opacity 0.75s ease, transform 0.75s ease;
+    }
+    .screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.95);
+    }
+
+    /* ════════════════════════════════
+       SCREEN 1 — QUESTION
+    ════════════════════════════════ */
+    .main-heart {
+      font-size: clamp(64px, 11vw, 96px);
+      line-height: 1;
+      animation: heartbeat 1.5s ease-in-out infinite;
+      filter: drop-shadow(0 0 32px #ff416c) drop-shadow(0 0 60px rgba(255, 65, 108, 0.4));
+    }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      14%       { transform: scale(1.28); }
+      28%       { transform: scale(1); }
+      42%       { transform: scale(1.18); }
+      70%       { transform: scale(1); }
+    }
+
+    .question-heading {
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(32px, 6.5vw, 72px);
+      color: #fff;
+      text-align: center;
+      line-height: 1.25;
+      text-shadow: 0 0 50px rgba(255, 130, 170, 0.95), 0 3px 14px rgba(0, 0, 0, 0.6);
+      max-width: 740px;
+    }
+
+    .question-sub {
+      font-size: clamp(12px, 1.8vw, 16px);
+      color: rgba(255, 205, 225, 0.75);
+      letter-spacing: 2px;
+      font-weight: 300;
+    }
+
+    .btns-wrap {
+      display: flex;
+      gap: 28px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      min-height: 75px;
+    }
+
+    /* ─── Base button ─── */
+    .btn {
+      padding: 16px 54px;
+      font-family: 'Noto Sans Georgian', sans-serif;
+      font-size: clamp(17px, 2.4vw, 22px);
+      font-weight: 700;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      outline: none;
+      position: relative;
+      letter-spacing: 0.5px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50px;
+      background: radial-gradient(circle at 38% 28%, rgba(255,255,255,0.38), transparent 65%);
+      pointer-events: none;
+    }
+
+    /* ─── Yes ─── */
+    #btn-yes {
+      background: linear-gradient(135deg, #ff3f6e, #ff6535);
+      color: #fff;
+      box-shadow: 0 8px 32px rgba(255, 65, 108, 0.75);
+      animation: yesPulse 2s ease-in-out infinite;
+    }
+    @keyframes yesPulse {
+      0%, 100% { box-shadow: 0 8px 32px rgba(255, 65, 108, 0.7); }
+      50%       { box-shadow: 0 12px 52px rgba(255, 65, 108, 1), 0 0 0 10px rgba(255, 65, 108, 0.15); }
+    }
+    #btn-yes:hover {
+      transform: scale(1.12);
+      box-shadow: 0 18px 55px rgba(255, 65, 108, 1);
+      animation: none;
+    }
+    #btn-yes:active { transform: scale(0.97); }
+
+    /* ─── No ─── */
+    #btn-no {
+      background: linear-gradient(135deg, #667eea, #8e5cba);
+      color: #fff;
+      box-shadow: 0 6px 22px rgba(100, 80, 190, 0.5);
+    }
+    #btn-no.is-escaped {
+      position: fixed;
+      z-index: 9999;
+      transition: none !important;
+    }
+    #btn-no:hover { transform: scale(1.05); }
+
+    /* ─── "No" tease label ─── */
+    #no-tease {
+      position: fixed;
+      font-size: 13px;
+      color: rgba(255, 200, 220, 0.8);
+      font-style: italic;
+      pointer-events: none;
+      z-index: 9998;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #no-tease.show { opacity: 1; }
+
+    /* ════════════════════════════════
+       SCREEN 2 — CHOICES
+    ════════════════════════════════ */
+    .choices-heading {
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(26px, 5vw, 54px);
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 0 35px rgba(255, 140, 175, 0.95);
+      animation: fadeUp 0.55s ease;
+    }
+    .choices-sub {
+      font-size: clamp(12px, 1.7vw, 16px);
+      color: rgba(255, 210, 232, 0.85);
+      text-align: center;
+      animation: fadeUp 0.7s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .date-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 13px;
+      max-width: 820px;
+      width: 100%;
+    }
+    @media (max-width: 680px) {
+      .date-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 400px) {
+      .date-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .date-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 22px 10px 18px;
+      text-align: center;
+      cursor: pointer;
+      color: #fff;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: cardPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    }
+    .date-card:nth-child(1)  { animation-delay: 0.04s; }
+    .date-card:nth-child(2)  { animation-delay: 0.08s; }
+    .date-card:nth-child(3)  { animation-delay: 0.12s; }
+    .date-card:nth-child(4)  { animation-delay: 0.16s; }
+    .date-card:nth-child(5)  { animation-delay: 0.20s; }
+    .date-card:nth-child(6)  { animation-delay: 0.24s; }
+    .date-card:nth-child(7)  { animation-delay: 0.28s; }
+    .date-card:nth-child(8)  { animation-delay: 0.32s; }
+    .date-card:nth-child(9)  { animation-delay: 0.36s; }
+    .date-card:nth-child(10) { animation-delay: 0.40s; }
+
+    @keyframes cardPop {
+      from { opacity: 0; transform: scale(0.55) translateY(18px); }
+      to   { opacity: 1; transform: scale(1)    translateY(0);    }
+    }
+
+    .date-card:hover {
+      background: rgba(255, 75, 130, 0.35);
+      border-color: rgba(255, 160, 195, 0.7);
+      transform: translateY(-10px) scale(1.07);
+      box-shadow: 0 20px 42px rgba(255, 65, 108, 0.45);
+    }
+    .date-card:active { transform: scale(0.93); }
+
+    .card-icon  { font-size: clamp(28px, 4vw, 42px); display: block; margin-bottom: 9px; }
+    .card-label { font-size: clamp(10px, 1.3vw, 13px); font-weight: 600; line-height: 1.25; }
+
+    /* ════════════════════════════════
+       SCREEN 3 — RESULT
+    ════════════════════════════════ */
+    .result-emoji {
+      font-size: clamp(72px, 12vw, 108px);
+      line-height: 1;
+      animation: bounceIn 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      filter: drop-shadow(0 0 36px rgba(255, 100, 145, 0.95));
+    }
+    @keyframes bounceIn {
+      0%   { transform: scale(0);    opacity: 0; }
+      55%  { transform: scale(1.38); opacity: 1; }
+      78%  { transform: scale(0.9); }
+      100% { transform: scale(1); }
+    }
+
+    .result-badge {
+      background: rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(14px);
+      border: 2px solid rgba(255, 210, 232, 0.45);
+      border-radius: 50px;
+      padding: 12px 40px;
+      font-size: clamp(17px, 3vw, 28px);
+      color: #ffd4e8;
+      font-weight: 700;
+      animation: fadeUp 0.55s ease 0.15s backwards;
+    }
+
+    .result-title {
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(26px, 5vw, 56px);
+      color: #fff;
+      text-align: center;
+      max-width: 680px;
+      text-shadow: 0 0 35px rgba(255, 145, 185, 1);
+      animation: fadeUp 0.55s ease 0.3s backwards;
+      line-height: 1.35;
+    }
+
+    .result-sub {
+      font-size: clamp(13px, 2vw, 18px);
+      color: rgba(255, 210, 230, 0.92);
+      max-width: 540px;
+      text-align: center;
+      animation: fadeUp 0.55s ease 0.48s backwards;
+      font-style: italic;
+      line-height: 1.6;
+    }
+
+    /* ─── Confetti pieces ─── */
+    .conf-piece {
+      position: absolute;
+      top: -30px;
+      animation: confFall linear forwards;
+    }
+    @keyframes confFall {
+      from { top: -30px; opacity: 1; transform: translateX(0) rotate(0deg) scale(1); }
+      to   { top: 110vh; opacity: 0.15; transform: translateX(var(--cd)) rotate(var(--cr)) scale(0.6); }
+    }
+
+    /* ─── Click-burst sparks ─── */
+    .spark {
+      position: fixed;
+      pointer-events: none;
+      z-index: 200;
+      font-size: 22px;
+      animation: sparkFly 0.7s ease forwards;
+    }
+    @keyframes sparkFly {
+      0%   { transform: translate(0, 0) scale(0.4) rotate(0deg); opacity: 1; }
+      100% { transform: translate(var(--sx), var(--sy)) scale(0) rotate(360deg); opacity: 0; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ─── Background layers ─── -->
+<div id="layer-stars"></div>
+<div id="layer-hearts"></div>
+<div id="layer-confetti"></div>
+<div id="no-tease">🏃 ვირბინოთ!</div>
+
+<!-- ════════════════════════════════
+     SCREEN 1 — QUESTION
+════════════════════════════════ -->
+<div class="screen" id="screen-question">
+
+  <div class="main-heart">💖</div>
+
+  <h1 class="question-heading">
+    გამომყვები<br>პაემანზე? 🌹
+  </h1>
+
+  <p class="question-sub">— გთხოვ, კარგად დაფიქრდი! —</p>
+
+  <div class="btns-wrap">
+    <button class="btn" id="btn-yes" onclick="handleYes(event)">
+      💕 &nbsp;დიახ!
+    </button>
+    <button class="btn" id="btn-no" onmouseenter="escapeNo()" ontouchstart="escapeNo(event)">
+      🙈 &nbsp;არა
+    </button>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN 2 — DATE CHOICES
+════════════════════════════════ -->
+<div class="screen hidden" id="screen-choices">
+  <h2 class="choices-heading">ვიცოდი, ვიცოდი! 😍<br>სად წავიდეთ?</h2>
+  <p class="choices-sub">აირჩიე ჩვენი სასურველი პაემანი ✨</p>
+  <div class="date-grid" id="date-grid"></div>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN 3 — RESULT
+════════════════════════════════ -->
+<div class="screen hidden" id="screen-result">
+  <div class="result-emoji" id="result-emoji">🎉</div>
+  <div class="result-badge" id="result-badge">კინო</div>
+  <h2 class="result-title" id="result-title">ვიცოდი!</h2>
+  <p  class="result-sub"   id="result-sub">...</p>
+</div>
+
+
+<script>
+/* ─────────────────────────────────────────────
+   DATA
+───────────────────────────────────────────── */
+const dates = [
+  { icon: '🎬', label: 'კინო',              result: 'კინო 🎬'              },
+  { icon: '🍷', label: 'რესტორანი',          result: 'რესტორანი 🍷'          },
+  { icon: '🎭', label: 'თეატრი',             result: 'თეატრი 🎭'             },
+  { icon: '🎶', label: 'ოპერა',              result: 'ოპერა 🎶'              },
+  { icon: '✈️', label: 'მოგზაურობა',         result: 'მოგზაურობა ✈️'         },
+  { icon: '🧺', label: 'პიკნიკი',            result: 'პიკნიკი 🧺'            },
+  { icon: '🎡', label: 'გასართობი პარკი',    result: 'გასართობი პარკი 🎡'    },
+  { icon: '🌙', label: 'ვარსკვლავები',       result: 'ვარსკვლავები 🌙'       },
+  { icon: '🎨', label: 'მუზეუმი / გამოფენა', result: 'მუზეუმი 🎨'            },
+  { icon: '☕', label: 'კაფე-სეირნობა',      result: 'კაფე-სეირნობა ☕'      },
+];
+
+const msgs = [
+  {
+    title: 'კინო?! 😏 ბრწყინვალე!',
+    sub:   'ვიცი ვიცი — 15 წუთში მაინც უნდა დაიძინო და მარტოს მომიწევს ყურება! 🍿😂❤️'
+  },
+  {
+    title: 'რესტორანი?! 😏 არ მიკვირს',
+    sub:   'ქ-ნ ანა ხომ ჭამა-სმის მინისტრია! 😂💳❤️'
+  },
+  {
+    title: 'თეატრი?! 😏 ვაი, კულტურული!',
+    sub:   'ვიცი: მე-3 მოქმედებაში ჩაიძინებ. ყოველ ჯერზე ასეა. მაგრამ ისეთი ლამაზი ხარ, როდესაც გძინავს 😘🎭'
+  },
+  {
+    title: 'ოპერა?! 😏 სერიოზულად?',
+    sub:   'ადამიანი კრეატივი ხარ! 😂🎶 ამიტომ მიყვარხარ!'
+  },
+  {
+    title: 'მოგზაურობა?! 😏 ოჰ, ბარგი?',
+    sub:   'ბარგი მე უნდა ვათრიო ხო? 😂✈️ მაგრამ შენთან ერთად ნებისმიერ ქვეყანაში მოვდივარ! ❤️'
+  },
+  {
+    title: 'პიკნიკი?! 😏 ბუნება!',
+    sub:   'ანუ შენ ინსტაგრამისთვის ფოტოს გადაიღებ, მე — ოპერატორი ვიქნები კარგი გეგმაა! 😂🌸 მაგრამ შენთან ბედნიერი ვარ! ❤️'
+  },
+  {
+    title: 'გასართობი პარკი?! 😏',
+    sub:   'ოფლიანი დათუჩა - ჩვენი "რომანტიკა"! 😂🎢 იდეალური ვარიანტი! ❤️'
+  },
+  {
+    title: 'ვარსკვლავები?! 😏 ასტრონომი?',
+    sub:   '"ვარსკვლავები ვნახოთ!" 😂🌙 შენ ყველაზე ლამაზი ვარსკვლავი ხარ ❤️'
+  },
+  {
+    title: 'მუზეუმი?! 😏 ინტელექტუალი!',
+    sub:   'ეს შეგვიძლია იტალიაში! 😂🎨 კარგი, მოთმინება! ❤️'
+  },
+  {
+    title: 'კაფე-სეირნობა?! 😏 ოქროს სტანდარტი!',
+    sub:   'ყავა → ფოტო → ინსტაგრამი → კიდევ ყავა 😂☕ მაგრამ შენთან ყველაფერი სახალისოა! ❤️'
+  },
+];
+
+
+/* ─────────────────────────────────────────────
+   STARS
+───────────────────────────────────────────── */
+(function initStars() {
+  const layer = document.getElementById('layer-stars');
+  for (let i = 0; i < 90; i++) {
+    const el = document.createElement('span');
+    el.className = 'star';
+    el.textContent = i % 5 === 0 ? '✦' : (i % 7 === 0 ? '✧' : '·');
+    el.style.cssText = `
+      left: ${Math.random() * 100}%;
+      top:  ${Math.random() * 100}%;
+      font-size: ${3 + Math.random() * 10}px;
+      --dur:   ${2 + Math.random() * 4}s;
+      --delay: ${Math.random() * 5}s;
+    `;
+    layer.appendChild(el);
+  }
+})();
+
+
+/* ─────────────────────────────────────────────
+   FLOATING HEARTS
+───────────────────────────────────────────── */
+const heartSet = ['❤️','💕','💖','💗','💓','💞','💝','🌸','✨','🩷'];
+(function initHearts() {
+  const layer = document.getElementById('layer-hearts');
+  for (let i = 0; i < 24; i++) {
+    const el = document.createElement('span');
+    el.className = 'fheart';
+    el.textContent = heartSet[i % heartSet.length];
+    el.style.cssText = `
+      left:    ${Math.random() * 100}%;
+      font-size: ${13 + Math.random() * 24}px;
+      --dur:   ${6 + Math.random() * 11}s;
+      --delay: ${Math.random() * 12}s;
+      --drift: ${(Math.random() - 0.5) * 130}px;
+      --rot:   ${(Math.random() - 0.5) * 60}deg;
+    `;
+    layer.appendChild(el);
+  }
+})();
+
+
+/* ─────────────────────────────────────────────
+   NO BUTTON — ESCAPE LOGIC
+───────────────────────────────────────────── */
+const noBtn   = document.getElementById('btn-no');
+const tease   = document.getElementById('no-tease');
+let noEscaped = false;
+let escCount  = 0;
+const teaseMsgs = [
+  '🏃 ვირბინოთ!', '😜 ვერ დაიჭერ!', '🙊 ჰა-ჰა!',
+  '😂 არააააა!', '✌️ ვერ გამომიჭერ!',
+  '🌀 ანაბანა!', '😈 ეცადე!',
+];
+
+function escapeNo(e) {
+  if (e && e.cancelable) e.preventDefault();
+
+  escCount++;
+  if (!noEscaped) {
+    const r = noBtn.getBoundingClientRect();
+    noBtn.style.left = r.left + 'px';
+    noBtn.style.top  = r.top  + 'px';
+    noBtn.classList.add('is-escaped');
+    noEscaped = true;
+  }
+
+  const w  = window.innerWidth;
+  const h  = window.innerHeight;
+  const bw = noBtn.offsetWidth  + 24;
+  const bh = noBtn.offsetHeight + 24;
+
+  let nx, ny, tries = 0;
+  do {
+    nx = Math.random() * (w - bw);
+    ny = Math.random() * (h - bh);
+    tries++;
+  } while (tries < 10 && Math.abs(nx - parseFloat(noBtn.style.left)) < 80 && Math.abs(ny - parseFloat(noBtn.style.top)) < 80);
+
+  noBtn.style.left = nx + 'px';
+  noBtn.style.top  = ny + 'px';
+
+  /* show cheeky tease label near button */
+  tease.textContent = teaseMsgs[escCount % teaseMsgs.length];
+  tease.style.left = Math.min(nx + bw / 2 - 40, w - 130) + 'px';
+  tease.style.top  = Math.max(ny - 28, 6) + 'px';
+  tease.classList.add('show');
+  clearTimeout(tease._tid);
+  tease._tid = setTimeout(() => tease.classList.remove('show'), 900);
+}
+
+/* proximity detection — flee before cursor lands */
+document.addEventListener('mousemove', (e) => {
+  if (document.getElementById('screen-question').classList.contains('hidden')) return;
+  const r    = noBtn.getBoundingClientRect();
+  const cx   = r.left + r.width  / 2;
+  const cy   = r.top  + r.height / 2;
+  const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+  if (dist < 110) escapeNo();
+});
+
+
+/* ─────────────────────────────────────────────
+   YES — SPARK BURST
+───────────────────────────────────────────── */
+function spawnSparks(x, y) {
+  const sparks = ['💖','💕','✨','🌸','💗','⭐','🩷','💫','🌟'];
+  for (let i = 0; i < 14; i++) {
+    const el = document.createElement('div');
+    el.className = 'spark';
+    const angle = (360 / 14) * i * (Math.PI / 180);
+    const dist  = 80 + Math.random() * 100;
+    el.textContent = sparks[Math.floor(Math.random() * sparks.length)];
+    el.style.cssText = `
+      left: ${x}px; top: ${y}px;
+      font-size: ${14 + Math.random() * 14}px;
+      --sx: ${Math.cos(angle) * dist}px;
+      --sy: ${Math.sin(angle) * dist}px;
+      animation-duration: ${0.5 + Math.random() * 0.4}s;
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+  }
+}
+
+function handleYes(e) {
+  spawnSparks(e.clientX, e.clientY);
+  setTimeout(showChoices, 200);
+}
+
+
+/* ─────────────────────────────────────────────
+   SHOW CHOICES SCREEN
+───────────────────────────────────────────── */
+function showChoices() {
+  const grid = document.getElementById('date-grid');
+  grid.innerHTML = '';
+  dates.forEach((d, i) => {
+    const card = document.createElement('div');
+    card.className = 'date-card';
+    card.innerHTML = `<span class="card-icon">${d.icon}</span><span class="card-label">${d.label}</span>`;
+    card.addEventListener('click', () => showResult(i));
+    grid.appendChild(card);
+  });
+
+  document.getElementById('screen-question').classList.add('hidden');
+  document.getElementById('screen-choices').classList.remove('hidden');
+}
+
+
+/* ─────────────────────────────────────────────
+   SHOW RESULT SCREEN
+───────────────────────────────────────────── */
+function showResult(idx) {
+  const d = dates[idx];
+  const m = msgs[idx];
+
+  document.getElementById('result-emoji').textContent = d.icon;
+  document.getElementById('result-badge').textContent = d.result;
+  document.getElementById('result-title').textContent = m.title;
+  document.getElementById('result-sub').textContent   = m.sub;
+
+  document.getElementById('screen-choices').classList.add('hidden');
+  document.getElementById('screen-result').classList.remove('hidden');
+
+  launchConfetti();
+}
+
+
+/* ─────────────────────────────────────────────
+   CONFETTI
+───────────────────────────────────────────── */
+function launchConfetti() {
+  const layer  = document.getElementById('layer-confetti');
+  const pieces = ['💖','💕','✨','🌸','💗','⭐','🎊','💫','🩷','💝','🌟','🎀'];
+  for (let i = 0; i < 90; i++) {
+    const p   = document.createElement('div');
+    p.className = 'conf-piece';
+    const dur = 2.2 + Math.random() * 3.2;
+    const del = Math.random() * 1.8;
+    p.textContent = pieces[Math.floor(Math.random() * pieces.length)];
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      font-size: ${15 + Math.random() * 18}px;
+      --cd: ${(Math.random() - 0.5) * 320}px;
+      --cr: ${(Math.random() - 0.5) * 900}deg;
+      animation-duration: ${dur}s;
+      animation-delay:    ${del}s;
+    `;
+    layer.appendChild(p);
+    setTimeout(() => p.remove(), (dur + del) * 1000 + 400);
+  }
+}
+</script>
+</body>
+</html>
