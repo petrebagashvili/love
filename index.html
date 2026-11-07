@@ -75,7 +75,124 @@
       pointer-events: none;
       transform: scale(0.95);
     }
+    /* ════════════════════════════════
+       LOVE OPENING PAGE
+    ════════════════════════════════ */
 
+    #screen-love {
+      overflow: hidden;
+      gap: 20px;
+    }
+
+    .love-content {
+      position: relative;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 25px;
+      width: 100%;
+      padding: 20px;
+      background: rgba(35, 0, 25, 0.35);
+      backdrop-filter: blur(8px);
+      border-radius: 30px;
+      max-width: 750px;
+    }
+
+    .photo {
+      position: absolute;
+      width: clamp(100px, 17vw, 190px);
+      height: clamp(130px, 22vw, 240px);
+      padding: 7px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 10px 35px rgba(255, 50, 120, .5);
+      z-index: 5;
+      animation: photoFloat 4s ease-in-out infinite;
+    }
+
+    .photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 9px;
+    }
+
+    .photo-1 {
+      top: 5%;
+      left: 5%;
+      transform: rotate(-12deg);
+    }
+
+    .photo-2 {
+      top: 5%;
+      right: 5%;
+      transform: rotate(12deg);
+      animation-delay: .5s;
+    }
+
+    .photo-3 {
+      bottom: 5%;
+      left: 5%;
+      transform: rotate(10deg);
+      animation-delay: 1s;
+    }
+
+    .photo-4 {
+      bottom: 5%;
+      right: 5%;
+      transform: rotate(-10deg);
+      animation-delay: 1.5s;
+    }
+
+    @keyframes photoFloat {
+      0%, 100% {
+        margin-top: 0;
+      }
+      50% {
+        margin-top: -12px;
+      }
+    }
+
+    #love-yes {
+      background: linear-gradient(135deg, #ff3f6e, #ff6535);
+      color: white;
+      box-shadow: 0 8px 32px rgba(255,65,108,.75);
+      animation: yesPulse 2s infinite;
+    }
+
+    #love-no {
+      background: linear-gradient(135deg, #667eea, #8e5cba);
+      color: white;
+      box-shadow: 0 6px 22px rgba(100,80,190,.5);
+    }
+
+    #love-no.is-escaped {
+      position: fixed;
+      z-index: 9999;
+      transition: none !important;
+    }
+
+    @media(max-width:600px) {
+      .photo {
+        width: 95px;
+        height: 125px;
+      }
+
+      .photo-1, .photo-2 {
+        top: 4%;
+      }
+
+      .photo-3, .photo-4 {
+        bottom: 4%;
+      }
+
+      .love-content {
+        gap: 18px;
+        padding: 12px;
+      }
+    }
     /* ════════════════════════════════
        SCREEN 1 — QUESTION
     ════════════════════════════════ */
@@ -348,9 +465,58 @@
 <div id="no-tease">🏃 ვირბინოთ!</div>
 
 <!-- ════════════════════════════════
+     SCREEN 0 — LOVE QUESTION
+════════════════════════════════ -->
+
+<div class="screen" id="screen-love">
+
+  <div class="photo photo-1">
+    <img src="photo1.jpg" alt="Our memory">
+  </div>
+
+  <div class="photo photo-2">
+    <img src="photo2.jpg" alt="Our memory">
+  </div>
+
+  <div class="photo photo-3">
+    <img src="photo3.jpg" alt="Our memory">
+  </div>
+
+  <div class="photo photo-4">
+    <img src="photo4.jpg" alt="Our memory">
+  </div>
+
+  <div class="love-content">
+    <div class="main-heart">💖</div>
+
+    <h1 class="question-heading">
+      I love you ❤️
+      <br>
+      Will you be my girlfriend?
+    </h1>
+
+    <p class="question-sub">
+      — You make my world beautiful — ✨
+    </p>
+
+    <div class="btns-wrap">
+      <button class="btn" id="love-yes"
+        onclick="loveYes(event)">
+        💕 YES!
+      </button>
+
+      <button class="btn" id="love-no"
+        onmouseenter="escapeLoveNo()"
+        ontouchstart="escapeLoveNo(event)">
+        🙈 NO
+      </button>
+    </div>
+  </div>
+</div>
+<!-- ════════════════════════════════
      SCREEN 1 — QUESTION
 ════════════════════════════════ -->
-<div class="screen" id="screen-question">
+<div class="screen hidden" id="screen-question">
 
   <div class="main-heart">💖</div>
 
@@ -392,6 +558,62 @@
 
 
 <script>
+/* ════════════════════════════════
+   LOVE QUESTION — YES / NO
+════════════════════════════════ */
+
+const loveNo = document.getElementById('love-no');
+
+let loveNoEscaped = false;
+
+function escapeLoveNo(e) {
+  if (e && e.cancelable) e.preventDefault();
+
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  if (!loveNoEscaped) {
+    loveNo.classList.add('is-escaped');
+    loveNoEscaped = true;
+  }
+
+  const bw = loveNo.offsetWidth;
+  const bh = loveNo.offsetHeight;
+
+  const nx = Math.random() * Math.max(0, w - bw - 20);
+  const ny = Math.random() * Math.max(0, h - bh - 20);
+
+  loveNo.style.left = nx + 'px';
+  loveNo.style.top = ny + 'px';
+}
+
+document.addEventListener('mousemove', (e) => {
+  if (
+    document.getElementById('screen-love')
+      .classList.contains('hidden')
+  ) return;
+
+  const r = loveNo.getBoundingClientRect();
+
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+
+  if (Math.hypot(e.clientX - cx, e.clientY - cy) < 110) {
+    escapeLoveNo();
+  }
+});
+
+function loveYes(e) {
+  spawnSparks(e.clientX, e.clientY);
+
+  setTimeout(() => {
+    document.getElementById('screen-love')
+      .classList.add('hidden');
+
+    document.getElementById('screen-question')
+      .classList.remove('hidden');
+  }, 500);
+}
 /* ─────────────────────────────────────────────
    DATA
 ───────────────────────────────────────────── */
